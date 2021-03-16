@@ -1,0 +1,45 @@
+version: "3.1"
+services:
+    www:
+        image: apache:latest
+        container_name: apache
+        ports: 
+            - "8003:80"
+        volumes:
+            - ./www:/var/www/html/
+        links:
+            - db
+        networks:
+            - default
+    db:
+        image: mariadb:${MYSQL_VERSION}
+        container_name: ${MYSQL_HOST}
+        restart: always
+        env_file:
+            - ".env"
+        environment:
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+            - MYSQL_USER=${MYSQL_USER}
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        ports:
+            - "3008:3306"
+        volumes:
+            - "./data/maria:/var/lib/mysql"
+        networks:
+            - default
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: admin
+        ports:
+            - "8888:80"
+        environment:
+            - PMA_ARBITRARY=1
+            - PMA_HOST=${MYSQL_HOST}
+        restart: always
+        depends_on:
+            - db
+        networks:
+            - default
+volumes:
+    persistent:
